@@ -1,69 +1,53 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateTests, detectLanguage, type SupportedLanguage } from "@/lib/claude";
-import { DEMO_TESTS, DEMO_LANGUAGE } from "@/lib/demo";
+import { generateCommitMessage, type CommitStyle } from "@/lib/claude";
+import { DEMO_COMMIT } from "@/lib/demo";
 
-export const maxDuration = 60;
+export const maxDuration = 30;
 
-const SUPPORTED_LANGUAGES: SupportedLanguage[] = [
-  "javascript",
-  "typescript",
-  "python",
-  "go",
-  "rust",
-];
+const VALID_STYLES: CommitStyle[] = ["conventional", "angular", "simple"];
 
-function isSupported(lang: string): lang is SupportedLanguage {
-  return SUPPORTED_LANGUAGES.includes(lang as SupportedLanguage);
+function isValidStyle(s: string): s is CommitStyle {
+  return VALID_STYLES.includes(s as CommitStyle);
 }
 
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as {
-      code?: string;
-      language?: string;
+      input?: string;
+      style?: string;
       apiKey?: string;
     };
 
-    const { code, language: rawLang, apiKey } = body;
+    const { input, style: rawStyle, apiKey } = body;
 
-    if (!code || typeof code !== "string" || !code.trim()) {
-      return NextResponse.json({ error: "code is required" }, { status: 400 });
+    if (!input || typeof input !== "string" || !input.trim()) {
+      return NextResponse.json({ error: "input is required" }, { status: 400 });
     }
 
-    if (code.length > 20_000) {
+    if (input.length > 30_000) {
       return NextResponse.json(
-        { error: "Code is too long (max 20,000 characters)" },
+        { error: "Input is too long (max 30,000 characters)" },
         { status: 400 }
       );
     }
 
-    // Resolve language — use provided, validate, or auto-detect
-    let language: SupportedLanguage;
-    if (rawLang && typeof rawLang === "string" && rawLang !== "auto") {
-      if (!isSupported(rawLang)) {
-        return NextResponse.json(
-          { error: `Unsupported language: ${rawLang}` },
-          { status: 400 }
-        );
-      }
-      language = rawLang;
-    } else {
-      language = detectLanguage(code);
-    }
+    const style: CommitStyle =
+      rawStyle && typeof rawStyle === "string" && isValidStyle(rawStyle)
+        ? rawStyle
+        : "conventional";
 
     const resolvedKey =
       apiKey && typeof apiKey === "string" && apiKey.trim()
         ? apiKey.trim()
         : process.env.ANTHROPIC_API_KEY;
 
-    // Graceful fallback: return demo tests if no API key configured
     if (!resolvedKey) {
-      return NextResponse.json({ tests: DEMO_TESTS, language: DEMO_LANGUAGE, demo: true });
+      return NextResponse.json({ message: DEMO_COMMIT, demo: true });
     }
 
-    const tests = await generateTests(code, language, resolvedKey);
+    const message = await generateCommitMessage(input, style, resolvedKey);
 
-    return NextResponse.json({ tests, language });
+    return NextResponse.json({ message });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Generation failed";
     return NextResponse.json({ error: message }, { status: 500 });
