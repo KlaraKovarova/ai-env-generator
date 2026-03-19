@@ -1,5 +1,5 @@
 {
-  "name": "commit-msg-gen",
+  "name": "env-gen",
   "version": "0.1.0",
   "private": true,
   "scripts": {

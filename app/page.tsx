@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import Generator from "@/components/Generator";
 
 export const metadata: Metadata = {
-  title: "CommitCraft·AI – AI commit message generator",
+  title: "EnvGen·AI – AI .env File Generator",
   description:
-    "Paste a git diff or describe your changes. AI writes a perfect conventional commit message in seconds. Free, no account needed.",
+    "Paste your code or describe your stack. AI generates a complete .env.example with all required variables, sensible defaults, and docs. Free, no account needed.",
   openGraph: {
-    title: "CommitCraft·AI – AI commit message generator",
-    description: "Paste a git diff or describe your changes and get a perfect commit message in seconds.",
+    title: "EnvGen·AI – AI .env File Generator",
+    description: "Paste your code or describe your stack and get a complete .env.example in seconds.",
     type: "website",
   },
 };
@@ -18,7 +18,7 @@ export default function Home() {
       <header className="border-b border-gray-800 py-4 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <span className="text-lg font-bold text-white">
-            CommitCraft<span className="text-amber-400">·AI</span>
+            EnvGen<span className="text-cyan-400">·AI</span>
           </span>
           <span className="text-sm text-gray-500">3 free · BYOK unlimited</span>
         </div>
@@ -27,14 +27,14 @@ export default function Home() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-16">
         <div className="text-center mb-12">
           <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 tracking-tight">
-            Commit messages in{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-400">
+            .env.example in{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-sky-400">
               seconds
             </span>
           </h1>
           <p className="text-gray-400 text-lg max-w-xl mx-auto">
-            Paste a git diff or describe your changes. AI generates a perfect commit message
-            following conventional commits, Angular, or simple format.
+            Paste your package.json, docker-compose, config files, or describe your stack.
+            AI generates a complete .env.example with all variables, defaults, and inline docs.
           </p>
         </div>
 
@@ -48,14 +48,14 @@ export default function Home() {
             href="https://anthropic.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-amber-400 hover:text-amber-300 transition-colors"
+            className="text-cyan-400 hover:text-cyan-300 transition-colors"
           >
             Claude AI
           </a>
           {" · "}
           Your code is never stored
         </p>
-        <div className="mt-3">
+        <div className="mt-3 mb-4">
           <a
             href="https://buymeacoffee.com/aiworks"
             target="_blank"
@@ -64,6 +64,13 @@ export default function Home() {
           >
             ☕ Support this project
           </a>
+        </div>
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-gray-700">
+          <span className="text-gray-800">More AI dev tools:</span>
+          <a href="https://readme-gen.vercel.app" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-400 transition-colors">ReadmeGen</a>
+          <a href="https://code-review-ai.vercel.app" target="_blank" rel="noopener noreferrer" className="hover:text-violet-400 transition-colors">CodeReview·AI</a>
+          <a href="https://unit-test-gen.vercel.app" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 transition-colors">TestGen·AI</a>
+          <a href="https://commit-msg-gen.vercel.app" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition-colors">CommitCraft·AI</a>
         </div>
       </footer>
     </main>

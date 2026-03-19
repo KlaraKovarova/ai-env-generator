@@ -1,24 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateCommitMessage, type CommitStyle } from "@/lib/claude";
-import { DEMO_COMMIT } from "@/lib/demo";
+import { generateEnvFile } from "@/lib/claude";
+import { DEMO_OUTPUT } from "@/lib/demo";
 
 export const maxDuration = 30;
-
-const VALID_STYLES: CommitStyle[] = ["conventional", "angular", "simple"];
-
-function isValidStyle(s: string): s is CommitStyle {
-  return VALID_STYLES.includes(s as CommitStyle);
-}
 
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as {
       input?: string;
-      style?: string;
       apiKey?: string;
     };
 
-    const { input, style: rawStyle, apiKey } = body;
+    const { input, apiKey } = body;
 
     if (!input || typeof input !== "string" || !input.trim()) {
       return NextResponse.json({ error: "input is required" }, { status: 400 });
@@ -31,23 +24,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const style: CommitStyle =
-      rawStyle && typeof rawStyle === "string" && isValidStyle(rawStyle)
-        ? rawStyle
-        : "conventional";
-
     const resolvedKey =
       apiKey && typeof apiKey === "string" && apiKey.trim()
         ? apiKey.trim()
         : process.env.ANTHROPIC_API_KEY;
 
     if (!resolvedKey) {
-      return NextResponse.json({ message: DEMO_COMMIT, demo: true });
+      return NextResponse.json({ output: DEMO_OUTPUT, demo: true });
     }
 
-    const message = await generateCommitMessage(input, style, resolvedKey);
+    const output = await generateEnvFile(input, resolvedKey);
 
-    return NextResponse.json({ message });
+    return NextResponse.json({ output });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Generation failed";
     return NextResponse.json({ error: message }, { status: 500 });

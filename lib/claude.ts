@@ -4,45 +4,30 @@ function getClient(apiKey?: string) {
   return new Anthropic({ apiKey: apiKey ?? process.env.ANTHROPIC_API_KEY });
 }
 
-export type CommitStyle = "conventional" | "angular" | "simple";
+const SYSTEM_PROMPT = `You are an expert DevOps and full-stack engineer. Your job is to generate a complete, well-documented .env.example file from code snippets, package.json files, docker-compose configs, or stack descriptions.
 
-const STYLE_INSTRUCTIONS: Record<CommitStyle, string> = {
-  conventional: `Use the Conventional Commits specification (https://www.conventionalcommits.org).
-Format: <type>(<optional scope>): <short description>
+Rules:
+1. Group variables by service/concern using section comments (# ====... header style)
+2. Include ALL environment variables the stack needs — don't omit any
+3. Provide sensible placeholder values (e.g. sk_test_ for Stripe, empty string for secrets)
+4. Add a one-line comment above each variable explaining what it is and where to get it
+5. Use SCREAMING_SNAKE_CASE for all variable names
+6. For secrets that need to be generated, add a comment like: # generate with: openssl rand -base64 32
+7. For service-specific values, add a URL hint like: # get from https://dashboard.stripe.com/apikeys
+8. Prefix public/client-side variables with NEXT_PUBLIC_ for Next.js, VITE_ for Vite, REACT_APP_ for CRA
+9. Detect common services automatically: databases (Postgres, MySQL, MongoDB, Redis, SQLite), auth providers (next-auth, clerk, auth0, supabase), payments (Stripe, PayPal, Lemon Squeezy), email (SendGrid, Resend, Mailgun, Postmark), storage (S3, Cloudinary, UploadThing), monitoring (Sentry, LogRocket), analytics (Google Analytics, Mixpanel, Posthog), AI APIs (OpenAI, Anthropic, Replicate), messaging (Slack, Discord, Twilio)
 
-Types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert
-Body and footer are optional but recommended for non-trivial changes.
-Breaking changes must be noted with BREAKING CHANGE: in footer or ! after type.`,
-  angular: `Use the Angular commit message convention.
-Format: <type>(<scope>): <subject>
+Output ONLY the raw .env.example file content — no markdown fences, no explanation, no preamble.`;
 
-Types: feat, fix, docs, style, refactor, perf, test, chore
-Subject: imperative mood, no capital first letter, no period at end.
-Body wraps at 72 chars. Footer for breaking changes and issue refs.`,
-  simple: `Use a simple, descriptive commit message.
-Format: Short subject line (50 chars max, imperative mood, no period).
-Optionally follow with a blank line and a body paragraph explaining why.
-No special prefix required.`,
-};
-
-const BASE_SYSTEM = `You are an expert software engineer who writes excellent, precise git commit messages.
-Your output must be ONLY the commit message text — no markdown fences, no explanation, no preamble.`;
-
-export async function generateCommitMessage(
-  input: string,
-  style: CommitStyle,
-  apiKey?: string
-): Promise<string> {
-  const styleGuide = STYLE_INSTRUCTIONS[style];
-
+export async function generateEnvFile(input: string, apiKey?: string): Promise<string> {
   const message = await getClient(apiKey).messages.create({
     model: "claude-haiku-4-5-20251001",
-    max_tokens: 512,
-    system: BASE_SYSTEM,
+    max_tokens: 2048,
+    system: SYSTEM_PROMPT,
     messages: [
       {
         role: "user",
-        content: `Style guide:\n${styleGuide}\n\nChanges (diff or description):\n${input}\n\nWrite a commit message for these changes.`,
+        content: `Generate a complete .env.example file for this project:\n\n${input}`,
       },
     ],
   });
